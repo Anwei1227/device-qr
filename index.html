@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>设备快捷操作</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    min-height: 100vh;
+}
+.header {
+    background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+    color: white;
+    padding: 24px 20px 30px;
+    text-align: center;
+}
+.header .eq-id {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 6px;
+    word-break: break-all;
+}
+.header .name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.header .workshop {
+    font-size: 14px;
+    opacity: 0.9;
+}
+.view-detail-btn {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 10px 24px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+.view-detail-btn:active { background: rgba(255,255,255,0.35); }
+
+.records-section {
+    background: white;
+    margin: -16px 16px 16px;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.records-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.records-title .live-tag {
+    font-size: 11px;
+    color: #52c41a;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: normal;
+}
+.records-grid {
+    display: flex;
+    gap: 8px;
+}
+.record-card {
+    flex: 1;
+    text-align: center;
+    padding: 12px 4px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: background 0.15s;
+}
+.record-card:active { background: #e8eaed; }
+.record-card .icon { font-size: 22px; margin-bottom: 4px; }
+.record-card .label { font-size: 12px; color: #666; }
+.record-card .hint { font-size: 10px; color: #999; margin-top: 2px; }
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #555;
+    margin: 20px 20px 12px;
+}
+.actions { padding: 0 16px 30px; }
+.action-btn {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: transform 0.1s, box-shadow 0.1s;
+    border-left: 4px solid;
+}
+.action-btn:active { transform: scale(0.98); }
+.action-btn .icon { font-size: 28px; margin-right: 14px; width: 40px; text-align: center; }
+.action-btn .text { flex: 1; }
+.action-btn .title { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.action-btn .desc { font-size: 12px; color: #999; }
+.action-btn .arrow { color: #ccc; font-size: 18px; }
+.btn-maint { border-left-color: #1a73e8; }
+.btn-repair { border-left-color: #ff6d00; }
+.btn-foreign { border-left-color: #9c27b0; }
+.btn-drawing { border-left-color: #00897b; }
+
+.tip {
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+    padding: 10px 20px 30px;
+    line-height: 1.6;
+}
+.not-found {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+}
+.not-found h2 { font-size: 18px; margin-bottom: 10px; color: #666; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const BASE_URL = 'https://j0eukrlohu.feishu.cn/base/VcN1blMsxam9JZsyqGGc6CWWnhg?table=tblcvQmiZt44si6E&record=';
+
+const forms = {
+    maint: {
+        name: '维护保养记录',
+        url: 'https://j0eukrlohu.feishu.cn/share/base/shrcnwfzfxn87HmHoOhDPfPdsnK',
+        eqFieldId: 'fldxozJptp'
+    },
+    repair: {
+        name: '电气设备维修单',
+        url: 'https://j0eukrlohu.feishu.cn/share/base/shrcnZQENCK1NuOiFcRIZU1nlQH',
+        eqFieldId: 'fldyTKGutf'
+    },
+    foreign: {
+        name: '涉外维修记录',
+        url: 'https://j0eukrlohu.feishu.cn/share/base/shrcn2jHKqfJMFfmIcylzE0ZpOd',
+        eqFieldId: 'fldVNbYRGu'
+    },
+    drawing: {
+        name: '图纸上传',
+        url: 'https://j0eukrlohu.feishu.cn/share/base/shrcnmlj1K3Co6YsfBgMDuySFYK',
+        eqFieldId: ''
+    }
+};
+
+function getParam(name) {
+    // 先从search取，再从hash取
+    const params = new URLSearchParams(window.location.search);
+    let val = params.get(name);
+    if (val) return decodeURIComponent(val);
+    if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        val = hashParams.get(name);
+        if (val) return decodeURIComponent(val);
+    }
+    return '';
+}
+
+function getToday() {
+    const d = new Date();
+    return d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+}
+
+function getNow() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+        + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function generateRepairNo() {
+    const d = new Date();
+    return 'WX' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0')
+        + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + String(d.getSeconds()).padStart(2,'0');
+}
+
+function generateForeignNo() {
+    const d = new Date();
+    return 'SW' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0')
+        + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + String(d.getSeconds()).padStart(2,'0');
+}
+
+function buildFormUrl(formConfig, device) {
+    const params = new URLSearchParams();
+    params.set('prefill_电气编号', device.eq);
+    if (device.name) params.set('prefill_设备名称', device.name);
+    if (device.type) params.set('prefill_设备类型', device.type);
+    if (device.ws) params.set('prefill_车间', device.ws);
+    if (device.power) params.set('prefill_额定功率', device.power);
+    return formConfig.url + '?' + params.toString();
+}
+
+function render() {
+    const id = getParam('id');
+    const name = getParam('name') || '未命名设备';
+    const ws = getParam('ws') || '未分配车间';
+    let eq = getParam('eq') || '-';
+    // 兼容旧二维码：自动把旧格式电气编号转换成新格式（去掉部门名称后的-）
+    eq = eq.replace(/(车间|动力科|多拉)-/g, '$1');
+    const app = document.getElementById('app');
+
+    if (!id) {
+        app.innerHTML = '<div class="not-found"><h2>⚠️ 未找到设备信息</h2><p>请检查二维码是否正确</p></div>';
+        return;
+    }
+
+    const device = { id, name, ws, eq, type: getParam('type') || '', power: getParam('power') || '' };
+    const detailUrl = BASE_URL + id;
+    const maintUrl = buildFormUrl(forms.maint, device)
+        + '&prefill_' + encodeURIComponent('保养年度') + '=' + encodeURIComponent(new Date().getFullYear() + '年')
+        + '&prefill_' + encodeURIComponent('保养时间') + '=' + encodeURIComponent(getNow());
+    const repairUrl = buildFormUrl(forms.repair, device)
+        + '&prefill_' + encodeURIComponent('维修单号') + '=' + encodeURIComponent(generateRepairNo())
+        + '&prefill_' + encodeURIComponent('维修日期') + '=' + encodeURIComponent(getToday());
+    const foreignUrl = buildFormUrl(forms.foreign, device)
+        + '&prefill_' + encodeURIComponent('外修单号') + '=' + encodeURIComponent(generateForeignNo());
+    const drawingUrl = buildFormUrl(forms.drawing, device);
+
+    app.innerHTML = `
+        <div class="header">
+            <div class="eq-id">${eq}</div>
+            <div class="name">${name}</div>
+            <div class="workshop">${ws}</div>
+            <a href="${detailUrl}" class="view-detail-btn">📋 查看设备完整档案（实时更新）</a>
+        </div>
+
+        <div class="records-section">
+            <div class="records-title">
+                <span>关联记录</span>
+                <span class="live-tag">● 实时同步</span>
+            </div>
+            <div class="records-grid">
+                <a href="${detailUrl}" class="record-card">
+                    <div class="icon">🔧</div>
+                    <div class="label">保养记录</div>
+                    <div class="hint">点击查看</div>
+                </a>
+                <a href="${detailUrl}" class="record-card">
+                    <div class="icon">🔨</div>
+                    <div class="label">维修记录</div>
+                    <div class="hint">点击查看</div>
+                </a>
+                <a href="${detailUrl}" class="record-card">
+                    <div class="icon">🚚</div>
+                    <div class="label">涉外维修</div>
+                    <div class="hint">点击查看</div>
+                </a>
+                <a href="${detailUrl}" class="record-card">
+                    <div class="icon">📋</div>
+                    <div class="label">图纸资料</div>
+                    <div class="hint">点击查看</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="section-title">快捷操作</div>
+
+        <div class="actions">
+            <a href="${maintUrl}" class="action-btn btn-maint">
+                <div class="icon">🔧</div>
+                <div class="text">
+                    <div class="title">添加维保记录</div>
+                    <div class="desc">关联设备已自动填写</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+            <a href="${repairUrl}" class="action-btn btn-repair">
+                <div class="icon">🔨</div>
+                <div class="text">
+                    <div class="title">添加维修记录</div>
+                    <div class="desc">单号+日期自动填写，关联设备已预填</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+            <a href="${foreignUrl}" class="action-btn btn-foreign">
+                <div class="icon">🚚</div>
+                <div class="text">
+                    <div class="title">涉外维修登记</div>
+                    <div class="desc">关联设备+电气编号已自动填写</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+            <a href="${drawingUrl}" class="action-btn btn-drawing">
+                <div class="icon">📋</div>
+                <div class="text">
+                    <div class="title">上传图纸资料</div>
+                    <div class="desc">关联设备+电气编号已自动填写</div>
+                </div>
+                <div class="arrow">›</div>
+            </a>
+        </div>
+
+        <div class="tip">
+            所有记录与台账实时双向同步<br>
+            无论从二维码添加还是在表格添加，两边都能看到<br>
+            点击「查看完整档案」或记录卡片查看最新详情
+        </div>
+    `;
+}
+render();
+</script>
+</body>
+</html>
